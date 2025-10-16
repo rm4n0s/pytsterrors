@@ -8,7 +8,7 @@ class TSTError(Exception):
     _func_trace: list[str]
     _message: str
     _tag: str
-    _params_metadata: list[typing.Dict[str, typing.Any]]
+    _params_per_function: list[typing.Dict[str, typing.Any]]
 
     def __init__(
         self,
@@ -22,7 +22,7 @@ class TSTError(Exception):
         super().__init__(*args, **kwargs)
         self._func_trace = []
         self._message = message
-        self._params_metadata = []
+        self._params_per_function = []
         self._tag = tag
 
         if can_inspect:
@@ -30,7 +30,7 @@ class TSTError(Exception):
                 func_name = frame_info.function
                 if func_name == "<module>":
                     continue
-                
+
                 frame = frame_info.frame
                 if "self" in frame.f_locals:
                     class_name = frame.f_locals["self"].__class__.__name__
@@ -47,7 +47,7 @@ class TSTError(Exception):
                         else:
                             params[name] = copy.deepcopy(arg_info.locals[name])
 
-                    self._params_metadata.append(
+                    self._params_per_function.append(
                         {"function": func_name, "params": params}
                     )
 
@@ -55,8 +55,8 @@ class TSTError(Exception):
             self._func_trace.reverse()
 
     def __str__(self) -> str:
-        if self.__traceback__:
-            return f"{super().__str__()}\nFunctions in call stack: {', '.join(self._func_trace)}"
+        if self._message:
+            return self._message
         else:
             return super().__str__()
 
@@ -65,8 +65,20 @@ class TSTError(Exception):
             "func_trace": self._func_trace,
             "message": self._message,
             "tag": self._tag,
-            "params_per_function": self._params_metadata,
+            "params_per_function": self._params_per_function,
         }
+
+    def func_trace(self) -> list[str]:
+        return self._func_trace
+    
+    def message(self) -> str:
+        return self._message
+    
+    def tag(self) -> str:
+        return self._tag 
+    
+    def params_per_function(self) -> list[typing.Dict[str, typing.Any]]:
+        return self._params_per_function
 
     def to_json(self) -> str:
         return json.dumps(self.dict())
@@ -75,4 +87,4 @@ class TSTError(Exception):
         self, func_trace: list[str], params_metadata: list[typing.Dict[str, typing.Any]]
     ) -> None:
         self._func_trace = func_trace
-        self._params_metadata = params_metadata
+        self._params_per_function = params_metadata

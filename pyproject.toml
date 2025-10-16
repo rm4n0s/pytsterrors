@@ -18,11 +18,11 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 example1 = "examples.example1.main:main"
 example2 = "examples.example2.main:main"
-
+example3 = "examples.example3.main:main"
 
 [dependency-groups]
 dev = [
-    "mypy (>=1.18.2,<2.0.0)"
+    "pytest (>=8.4.2,<9.0.0)"
 ]
 
 [tool.mypy]
