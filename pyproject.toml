@@ -1,7 +1,7 @@
 [project]
 name = "pytsterrors"
 version = "0.1.0"
-description = "Error types"
+description = "pytsterrors contains an exception that helps to validate trace calls"
 authors = [
     {name = "Manos Ragiadakos",email = "manos.ragiadakos@gmail.com"}
 ]
@@ -16,9 +16,10 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-example1 = "examples.example1.main:main"
-example2 = "examples.example2.main:main"
-example3 = "examples.example3.main:main"
+simple = "examples.simple.main:main"
+use_decorator = "examples.use_decorator.main:main"
+to_json = "examples.to_json.main:main"
+error_challenge = "examples.error_challenge.main:main"
 
 [dependency-groups]
 dev = [

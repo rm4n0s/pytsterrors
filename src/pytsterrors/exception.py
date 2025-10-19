@@ -8,13 +8,11 @@ class TSTError(Exception):
     _func_trace: list[str]
     _message: str
     _tag: str
-    _params_per_function: list[typing.Dict[str, typing.Any]]
 
     def __init__(
         self,
         tag: str,
         message: str,
-        copy_params=False,
         can_inspect=True,
         *args,
         **kwargs,
@@ -22,7 +20,6 @@ class TSTError(Exception):
         super().__init__(*args, **kwargs)
         self._func_trace = []
         self._message = message
-        self._params_per_function = []
         self._tag = tag
 
         if can_inspect:
@@ -38,19 +35,6 @@ class TSTError(Exception):
                 else:
                     self._func_trace.append(func_name)
 
-                if copy_params:
-                    arg_info = inspect.getargvalues(frame)
-                    params = {}
-                    for name in arg_info.args:
-                        if name == "self":
-                            params[name] = True
-                        else:
-                            params[name] = copy.deepcopy(arg_info.locals[name])
-
-                    self._params_per_function.append(
-                        {"function": func_name, "params": params}
-                    )
-
             self._func_trace[0] = f"{self._func_trace[0]}.{tag}"
             self._func_trace.reverse()
 
@@ -60,31 +44,53 @@ class TSTError(Exception):
         else:
             return super().__str__()
 
-    def dict(self) -> typing.Dict[str, typing.Any]:
+    def to_dict(self) -> typing.Dict[str, typing.Any]:
         return {
             "func_trace": self._func_trace,
             "message": self._message,
-            "tag": self._tag,
-            "params_per_function": self._params_per_function,
+            "tag": self._tag
         }
 
     def func_trace(self) -> list[str]:
         return self._func_trace
-    
+
     def message(self) -> str:
         return self._message
-    
+
     def tag(self) -> str:
-        return self._tag 
-    
-    def params_per_function(self) -> list[typing.Dict[str, typing.Any]]:
-        return self._params_per_function
+        return self._tag
 
     def to_json(self) -> str:
-        return json.dumps(self.dict())
+        return json.dumps(self.to_dict())
 
-    def set_attrs(
-        self, func_trace: list[str], params_metadata: list[typing.Dict[str, typing.Any]]
+    def routes(self, *func_names: str) -> bool:
+        return self._func_trace == list(func_names)
+
+    def sub_routes(self, *func_names: str) -> bool:
+        param_fns = list(func_names)
+        # empty sublist will be always false as there is no reason to
+        # check with empty list
+        if not param_fns:
+            return False
+
+        i = 0
+        m = len(param_fns)
+        for elem in self._func_trace:
+            if i < m and elem == param_fns[i]:
+                i += 1
+            if i == m:
+                return True
+        return False
+
+    def set_func_trace(
+        self, func_trace: list[str] 
     ) -> None:
         self._func_trace = func_trace
-        self._params_per_function = params_metadata
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TSTError):
+            return False
+        return self.func_trace() == other.func_trace() and \
+            self.message() == other.message() and \
+            self.tag() == other.tag() and \
+            self.message() == other.message()
