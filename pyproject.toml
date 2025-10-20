@@ -1,6 +1,6 @@
 [project]
 name = "pytsterrors"
-version = "0.1.1"
+version = "0.1.2"
 description = "pytsterrors contains an exception that helps to validate trace calls"
 authors = [
     {name = "Manos Ragiadakos"}
