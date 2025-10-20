@@ -92,5 +92,5 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.12"
-content-hash = "75265641fd1a3f2a4d608312a3879427b7141ac2a51d0873da5711cbc8ead28e"
+python-versions = ">=3.11"
+content-hash = "f5666f5625d676c506924a57dc0520a1f3ed2b2c774baed3dc85353594f8473d"
