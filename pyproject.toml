@@ -3,7 +3,7 @@ name = "pytsterrors"
 version = "0.1.1"
 description = "pytsterrors contains an exception that helps to validate trace calls"
 authors = [
-    {name = "Manos Ragiadakos",email = "manos.ragiadakos@gmail.com"}
+    {name = "Manos Ragiadakos"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
@@ -25,22 +25,3 @@ error_challenge = "examples.error_challenge.main:main"
 dev = [
     "pytest (>=8.4.2,<9.0.0)"
 ]
-
-[tool.mypy]
-# Core checks (enable these for basic safety)
-check_untyped_defs = true  # Flags untyped function calls/defs
-warn_return_any = true     # Warns if function returns Any
-warn_unused_ignores = true # Cleans up unused # type: ignore
-
-# Disable stricter flags from --strict
-disallow_untyped_defs = false     # Don't require hints on all defs
-disallow_incomplete_defs = false  # Allow partial hints
-disallow_any_generics = false     # Allow generics with Any
-no_implicit_optional = false      # Allow implicit Optionals
-strict_equality = false           # Don't enforce strict equality checks
-warn_redundant_casts = false      # Skip redundant cast warnings
-
-# Optional: Ignore specific modules or files
-[[tool.mypy.overrides]]
-module = ["legacy_module.py", "third_party.*"]
-ignore_errors = true  # Completely skip checking these
