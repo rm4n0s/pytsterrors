@@ -165,3 +165,37 @@ def test_tst_error_threading():
     expected_json = json.dumps(expected_dict)
     assert err.to_json() == expected_json
     assert json_to_tst_error(err.to_json()) == err
+
+
+
+def test_tst_error_fuzzy_routes():
+    def fn1():
+        raise TSTError("fn1-failed", "failed fn1")
+
+    def fn2():
+        fn1()
+
+    def fn3():
+        fn2()
+
+    def fn4() -> TSTError | None:
+        try:
+            fn3()
+        except TSTError as err:
+            return err
+
+    err = fn4()
+    assert err != None
+    all_trace = ['<module>', 'console_main', 'main', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
+                 'pytest_cmdline_main', 'wrap_session', '_main', 'HookCaller.__call__', 'PytestPluginManager._hookexec',
+                 '_multicall', 'pytest_runtestloop', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
+                 'pytest_runtest_protocol', 'runtestprotocol', 'call_and_report', 'from_call', '<lambda>', 'HookCaller.__call__',
+                 'PytestPluginManager._hookexec', '_multicall', 'pytest_runtest_call', 'Function.runtest', 'HookCaller.__call__',
+                 'PytestPluginManager._hookexec', '_multicall', 'pytest_pyfunc_call',
+                 'test_tst_error_fuzzy_routes', 'fn4', 'fn3', 'fn2', 'fn1.fn1-failed']
+    assert err.func_trace() == all_trace
+    assert err.routes(*all_trace)
+    assert err.fuzzy_routes('<module>',  'runtestprotocol', 'pytest_pyfunc_call', 'fn3', 'fn1.fn1-failed')
+    assert not err.fuzzy_routes('<module>',  'runtestprotocol', 'fn3', 'pytest_pyfunc_call', 'fn1.fn1-failed')
+    assert err.fuzzy_routes('_main',  'runtestprotocol', 'pytest_pyfunc_call', 'fn3')
+    assert not err.fuzzy_routes('_main',   'runtestprotocol', 'fn3', 'pytest_pyfunc_call')

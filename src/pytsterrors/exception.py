@@ -116,6 +116,16 @@ class TSTError(Exception):
                 return True
         return False
 
+    def fuzzy_routes(self, *func_names: str) -> bool:
+        ls_func_names = list(func_names)
+        for v in self._func_trace:
+            if len(ls_func_names) > 0:
+                if v == ls_func_names[0]:
+                    del ls_func_names[0]
+            else:
+                return True
+        return not len(ls_func_names) > 0
+
     def set_func_trace(
         self, func_trace: list[str] 
     ) -> None:

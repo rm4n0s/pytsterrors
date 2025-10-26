@@ -27,6 +27,9 @@ def tst_decorator(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
+            if isinstance(e, TSTError):
+                raise e
+            
             tag = type(e).__name__
             message = e.__str__()
             
