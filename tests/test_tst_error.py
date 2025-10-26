@@ -20,7 +20,7 @@ def test_tst_error():
 
     err = fn4()
     assert err != None
-    all_trace = ['console_main', 'main', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
+    all_trace = ['<module>', 'console_main', 'main', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
                  'pytest_cmdline_main', 'wrap_session', '_main', 'HookCaller.__call__', 'PytestPluginManager._hookexec',
                  '_multicall', 'pytest_runtestloop', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
                  'pytest_runtest_protocol', 'runtestprotocol', 'call_and_report', 'from_call', '<lambda>', 'HookCaller.__call__',
@@ -94,7 +94,7 @@ def test_tst_error_with_params():
 
     err = fn4()
     assert err != None
-    all_trace = ['console_main', 'main', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
+    all_trace = ['<module>', 'console_main', 'main', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
                  'pytest_cmdline_main', 'wrap_session', '_main', 'HookCaller.__call__', 'PytestPluginManager._hookexec',
                  '_multicall', 'pytest_runtestloop', 'HookCaller.__call__', 'PytestPluginManager._hookexec', '_multicall',
                  'pytest_runtest_protocol', 'runtestprotocol', 'call_and_report', 'from_call', '<lambda>', 'HookCaller.__call__',
@@ -114,7 +114,6 @@ def test_tst_error_with_params():
         "message": expected_msg,
         "tag": expected_tag
     }
-    print(err.to_dict())
     assert err.to_dict() == expected_dict
 
 
@@ -137,16 +136,17 @@ def test_tst_error_threading():
         except TSTError as e:
             nonlocal err
             err = e
-        
+
     t1 = threading.Thread(target=fn4)
     try:
         t1.start()
         t1.join()
     except TSTError as e:
-        err = e 
-    
+        err = e
+
     assert err != None
-    all_trace = ['Thread._bootstrap', 'Thread._bootstrap_inner', 'Thread.run', 'fn4', 'fn3', 'fn2', 'fn1.fn1-failed']
+    all_trace = ['Thread._bootstrap', 'Thread._bootstrap_inner',
+                 'Thread.run', 'fn4', 'fn3', 'fn2', 'fn1.fn1-failed']
     assert err.func_trace() == all_trace
     assert err.routes(*all_trace)
     assert err.sub_routes('fn3', 'fn2', 'fn1.fn1-failed')
@@ -165,4 +165,3 @@ def test_tst_error_threading():
     expected_json = json.dumps(expected_dict)
     assert err.to_json() == expected_json
     assert json_to_tst_error(err.to_json()) == err
-

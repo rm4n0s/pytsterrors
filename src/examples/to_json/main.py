@@ -21,6 +21,7 @@ def main() -> None:
     # here we simulate the user taking the error as json from microservice or even from the logs of the microservice
     err_json = get_restapi_microservice()
     err = json_to_tst_error(err_json)
+    print(err.func_trace())
     if err.sub_routes('get_restapi_microservice', 'internal_microservice.error-from-microservice'):
         print("exception from a specific route of calls")
 

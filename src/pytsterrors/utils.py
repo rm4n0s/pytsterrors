@@ -29,11 +29,11 @@ def tst_decorator(func):
         except Exception as e:
             tag = type(e).__name__
             message = e.__str__()
-            err = TSTError(tag, message)
-            func_name = func.__name__
-            trace = err.func_trace()
-            trace[len(trace)-1] = trace[len(trace)-1].replace("tst_decorated", func_name)
-            err.set_func_trace(trace)
+            
+            err = TSTError(tag, message, other_exception=e)
+            for _ in range(err._func_trace.count('tst_decorated')):
+                err._func_trace.remove('tst_decorated')
+
             raise err
 
     return tst_decorated

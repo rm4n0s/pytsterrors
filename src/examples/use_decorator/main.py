@@ -16,7 +16,7 @@ def main() -> None:
         example3(1)
     except TSTError as err:
         print(err.func_trace())
-        if err.routes('main', 'example3', 'example2', 'example1.JSONDecodeError'):
+        if err.routes('<module>', 'main', 'example3', 'example2', 'example1', 'loads', 'JSONDecoder.decode', 'JSONDecoder.raw_decode.JSONDecodeError'):
             print("exception from a specific route of calls and tag "+err.tag()+" is the name of the exception's class that raised by json.loads")
 
 if __name__ == "__main__":

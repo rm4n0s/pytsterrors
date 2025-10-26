@@ -29,7 +29,7 @@ def main() -> None:
     try:
         example3(1)
     except TSTError as err:
-        if err.routes('main', 'example3', 'example2', 'example1.error-from-examle1'):
+        if err.routes('<module>','main', 'example3', 'example2', 'example1.error-from-examle1'):
             print("exception from specific route of calls")
 
     try:

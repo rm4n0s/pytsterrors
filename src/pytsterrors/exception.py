@@ -1,6 +1,6 @@
 import json
-import inspect
-import copy
+import sys
+import types
 import typing
 
 
@@ -14,6 +14,7 @@ class TSTError(Exception):
         tag: str,
         message: str,
         can_inspect=True,
+        other_exception: Exception | None =None,
         *args,
         **kwargs,
     ) -> None:
@@ -21,22 +22,56 @@ class TSTError(Exception):
         self._func_trace = []
         self._message = message
         self._tag = tag
-
+        
         if can_inspect:
-            for frame_info in inspect.stack()[1:]:
-                func_name = frame_info.function
-                if func_name == "<module>":
-                    continue
-
-                frame = frame_info.frame
+            tb = None
+            
+            # Collect stack frames from current (depth=1 to skip __init__ frame) to outermost
+            frames = []
+            depth = 1  # Start from caller to exclude this __init__
+            while True:
+                try:
+                    frames.append(sys._getframe(depth))
+                    depth += 1
+                except ValueError:
+                    break
+            
+            # Build the traceback chain: innermost first, tb_next pointing outward
+            
+            for frame in reversed(frames):  # Process from outermost to innermost
+                tb = types.TracebackType(tb, frame, frame.f_lasti, frame.f_lineno)
+                
+                
+            while tb is not None:
+                frame = tb.tb_frame
+                func_name = frame.f_code.co_name
                 if "self" in frame.f_locals:
                     class_name = frame.f_locals["self"].__class__.__name__
                     self._func_trace.append(f"{class_name}.{func_name}")
                 else:
                     self._func_trace.append(func_name)
-
-            self._func_trace[0] = f"{self._func_trace[0]}.{tag}"
+                tb = tb.tb_next
+                
             self._func_trace.reverse()
+
+            if other_exception is not None:
+                call_stack = []
+                tb = other_exception.__traceback__
+                while tb is not None:
+                    frame = tb.tb_frame
+                    func_name = frame.f_code.co_name
+                    if "self" in frame.f_locals:
+                        class_name = frame.f_locals["self"].__class__.__name__
+                        call_stack.append(f"{class_name}.{func_name}")
+                    else:
+                        call_stack.append(func_name)
+                    tb = tb.tb_next
+                
+                print(call_stack)
+                self._func_trace = self._func_trace + call_stack
+                
+
+            self._func_trace[len(self._func_trace)-1] = f"{self._func_trace[len(self._func_trace)-1]}.{tag}"
 
     def __str__(self) -> str:
         if self._message:
