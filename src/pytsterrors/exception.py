@@ -67,7 +67,6 @@ class TSTError(Exception):
                         call_stack.append(func_name)
                     tb = tb.tb_next
                 
-                print(call_stack)
                 self._func_trace = self._func_trace + call_stack
                 
 
