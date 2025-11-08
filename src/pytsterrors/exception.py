@@ -8,13 +8,15 @@ class TSTError(Exception):
     _func_trace: list[str]
     _message: str
     _tag: str
+    _metadata: typing.Dict[str, typing.Any] | None
 
     def __init__(
         self,
         tag: str,
         message: str,
         can_inspect=True,
-        other_exception: Exception | None =None,
+        other_exception: Exception | None = None,
+        metadata: typing.Dict[str, typing.Any] | None = None,
         *args,
         **kwargs,
     ) -> None:
@@ -22,10 +24,11 @@ class TSTError(Exception):
         self._func_trace = []
         self._message = message
         self._tag = tag
-        
+        self._metadata = metadata
+
         if can_inspect:
             tb = None
-            
+
             # Collect stack frames from current (depth=1 to skip __init__ frame) to outermost
             frames = []
             depth = 1  # Start from caller to exclude this __init__
@@ -35,13 +38,12 @@ class TSTError(Exception):
                     depth += 1
                 except ValueError:
                     break
-            
+
             # Build the traceback chain: innermost first, tb_next pointing outward
-            
+
             for frame in reversed(frames):  # Process from outermost to innermost
                 tb = types.TracebackType(tb, frame, frame.f_lasti, frame.f_lineno)
-                
-                
+
             while tb is not None:
                 frame = tb.tb_frame
                 func_name = frame.f_code.co_name
@@ -51,7 +53,7 @@ class TSTError(Exception):
                 else:
                     self._func_trace.append(func_name)
                 tb = tb.tb_next
-                
+
             self._func_trace.reverse()
 
             if other_exception is not None:
@@ -66,11 +68,12 @@ class TSTError(Exception):
                     else:
                         call_stack.append(func_name)
                     tb = tb.tb_next
-                
-                self._func_trace = self._func_trace + call_stack
-                
 
-            self._func_trace[len(self._func_trace)-1] = f"{self._func_trace[len(self._func_trace)-1]}.{tag}"
+                self._func_trace = self._func_trace + call_stack
+
+            self._func_trace[len(self._func_trace) - 1] = (
+                f"{self._func_trace[len(self._func_trace) - 1]}.{tag}"
+            )
 
     def __str__(self) -> str:
         if self._message:
@@ -82,7 +85,7 @@ class TSTError(Exception):
         return {
             "func_trace": self._func_trace,
             "message": self._message,
-            "tag": self._tag
+            "tag": self._tag,
         }
 
     def func_trace(self) -> list[str]:
@@ -93,6 +96,9 @@ class TSTError(Exception):
 
     def tag(self) -> str:
         return self._tag
+
+    def metadata(self) -> typing.Dict[str, typing.Any] | None:
+        return self._metadata
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict())
@@ -126,15 +132,15 @@ class TSTError(Exception):
                 return True
         return not len(ls_func_names) > 0
 
-    def set_func_trace(
-        self, func_trace: list[str] 
-    ) -> None:
+    def set_func_trace(self, func_trace: list[str]) -> None:
         self._func_trace = func_trace
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TSTError):
             return False
-        return self.func_trace() == other.func_trace() and \
-            self.message() == other.message() and \
-            self.tag() == other.tag() and \
-            self.message() == other.message()
+        return (
+            self.func_trace() == other.func_trace()
+            and self.message() == other.message()
+            and self.tag() == other.tag()
+            and self.message() == other.message()
+        )
